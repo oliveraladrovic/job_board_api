@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from models.enums import UserRole
 
 class LoginIn(BaseModel):
     email: str
@@ -7,3 +8,6 @@ class LoginIn(BaseModel):
 class LoginOut(BaseModel):
     access_token: str
     token_type: str
+
+class NewRole(BaseModel):
+    role: UserRole

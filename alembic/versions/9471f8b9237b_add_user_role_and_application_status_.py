@@ -46,7 +46,7 @@ def downgrade() -> None:
                existing_type=postgresql.ENUM("admin", "employer", "candidate", name="user_role"),
                type_=sa.VARCHAR(),
                existing_nullable=False,
-               postgresql_using="status::text")
+               postgresql_using="role::text")
     op.alter_column('applications', 'status',
                existing_type=postgresql.ENUM("applied", "rejected", "accepted", name="application_status"),
                type_=sa.VARCHAR(),
