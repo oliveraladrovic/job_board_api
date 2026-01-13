@@ -3,8 +3,6 @@ from datetime import datetime
 from models.enums import ApplicationStatus
 
 class ApplicationCreate(BaseModel):
-    status: ApplicationStatus
-    user_id: int
     job_id: int
 
 class ApplicationOutCand(BaseModel):

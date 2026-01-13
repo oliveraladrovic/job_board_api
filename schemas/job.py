@@ -5,7 +5,6 @@ class JobCreate(BaseModel):
     description: str
     company_name: str
     location: str | None = None
-    employer_id: int
 
 class JobOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
