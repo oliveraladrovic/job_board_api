@@ -1,10 +1,11 @@
 from pydantic import BaseModel, ConfigDict
+from typing import Literal
 from models.enums import UserRole
 
 class UserCreate(BaseModel):
     email: str
     password: str
-    role: UserRole
+    role: Literal["candidate", "employer"]
     name: str
 
 class UserOut(BaseModel):
