@@ -13,6 +13,10 @@ router = APIRouter(prefix="/auth")
 
 @router.post("/register", response_model=UserOut, status_code=201)
 async def register_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+    # 0) Debug: inspect password value
+    print("PASSWORD:", user_in.password)
+    print("TYPE:", type(user_in.password))
+    print("LEN:", len(user_in.password))
     # 1) Email unique
     result = await db.execute(select(User).where(User.email == user_in.email))
     if result.scalar_one_or_none():
