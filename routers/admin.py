@@ -22,11 +22,7 @@ async def change_user_role(user_id: int, new_role: NewRole, db: AsyncSession = D
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    # 2) role must exist
-    if new_role not in UserRole:
-        raise HTTPException(status_code=400, detail="Role does not exist")
-    # 3) Change role
-    user.role = new_role
+    # 2) Change role
+    user.role = new_role.role
     await db.commit()
     await db.refresh(user)
-    # Inače vraćamo update-ani resurs, ali po API Contractu ovdje nemamo Returns

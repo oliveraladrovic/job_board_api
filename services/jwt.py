@@ -1,11 +1,13 @@
 import os
+from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 from jose import jwt, JWTError
 from fastapi import HTTPException
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+load_dotenv()
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES"))
 
 def create_access_token(user_id: int) -> str:
     payload = {
