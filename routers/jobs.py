@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.base import get_db
 from models.jobs import Job
@@ -13,10 +14,17 @@ router = APIRouter(prefix="/jobs")
 
 @router.post("/", response_model=JobOut, status_code=201)
 async def create_job(job_in: JobCreate, db: AsyncSession = Depends(get_db), user = Depends(require_employer_or_admin)):
-    new_job = Job(**job_in.model_dump())
+    new_job = Job(
+        title = job_in.title,
+        description = job_in.description,
+        company_name = job_in.company_name,
+        location = job_in.location,
+        employer_id = user.id
+    )
     db.add(new_job)
     await db.commit()
     await db.refresh(new_job)
+    return new_job
 
 @router.get("/my", response_model=list[JobOut])
 async def get_my_jobs(db: AsyncSession = Depends(get_db), employer = Depends(require_employer)):
@@ -32,21 +40,20 @@ async def get_job_applications(job_id: int, db: AsyncSession = Depends(get_db), 
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     # 3) Must be Job "owner" or admin
-    if Job.employer_id != user.id or user.role != UserRole.admin:
+    if job.employer_id != user.id and user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Forbidden")
     # 4) Find all applications
-    result = await db.execute(select(Application).where(Application.job_id == job_id))
+    result = await db.execute(select(Application).options(selectinload(Application.user)).where(Application.job_id == job_id))
     applications = []
     # 5) Structure data for response
     for application in result.scalars().all():
-        new_aapplication = {
+        new_application = {
             "user_id": application.user_id,
-            "user_name": "",
-            # a.user bi bio user "objekt" ali ne znam kako da izvučem name, logično bi mi bilo a.user.name, ali to ne radi
+            "user_name": application.user.name,
             "status": application.status,
             "applied_at": application.created_at
         }
-        applications.append(new_aapplication)
+        applications.append(new_application)
     return applications
 
 @router.get("/{job_id}", response_model=JobOut)
