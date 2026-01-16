@@ -1,129 +1,155 @@
 # Job Board API
 
-A production-ready backend API for a job board platform built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**.
+Backend REST API for a simple job board application,  built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**.
 
-This project supports three user roles:
+The API supports three user roles:
 - **Admin** – manages users and roles  
-- **Employer** – posts jobs and reviews applications  
+- **Employer** – creates and manages job posts  
 - **Candidate** – browses jobs and applies  
 
-The system uses **JWT authentication**, **role-based access control**, and **Alembic migrations**, and is designed to be deployed to a cloud environment.
+The project is designed as a clean, production-ready backendwith authentication, role-based authorization, database migrations, and deployment.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|------|-----------|
-| API | FastAPI |
-| Database | PostgreSQL (Neon) |
-| ORM | SQLAlchemy (async) |
-| Migrations | Alembic |
-| Auth | JWT (python-jose) |
-| Passwords | Passlib (bcrypt) |
-| Validation | Pydantic |
-| Deployment | Railway |
+**Backend**
+- Python 3.12+
+- FastAPI
+- SQLAlchemy (async)
+- Alembic
+- Pydantic
+
+**Database**
+- PostgreSQL (local and cloud - Neon)
+
+**Auth & Security**
+- JWT authentication
+- Role-based access control
+- Password hashing with `passlib[bcrypt]`
+
+**Deployment**
+- Railway
+- Gunicorn + Uvicorn workers
 
 ---
 
-## Authentication & Roles
+## Features
 
-Authentication is handled using **JWT Bearer tokens**.
+### Authentication
+- User registration
+- User login with JWT access token
+- Secure password hashing
 
-Each user has exactly one role:
+### Roles & Permissions
 - `admin`
 - `employer`
 - `candidate`
+- Role-based endpoint protection
 
-Role-based access is enforced at the endpoint level.
+### Jobs
+- Create job listings (employer/admin)
+- View all jobs (public)
+- View own jobs (employer)
+- View job details
 
----
-
-## Main Features
-
-### Users
-- Register as **employer** or **candidate**
-- Login and receive JWT token
-- Admin can change user roles
-
-### Employers
-- Create job listings
-- View their own jobs
-- View applications for their jobs
-
-### Candidates
-- View all job listings
-- Apply to jobs
-- View their own applications
+### Application
+- Candidates can apply for jobs
+- Candidates can view their applications
+- Employers/Admins can view applications for their jobs
 
 ### Admin
 - View all users
 - Change user roles
 
 ---
-
-## API Endpoints
-
-### Auth
+## Project structure
 ```
-POST /auth/register
-POST /auth/login
+job_board_api/
+│
+├── alembic/        # Database migrations
+├── database/       # DB engine and session
+├── dependencies/   # Auth & role sependencies
+├── models/         # SQLAlchemy models
+├── routers/        # API routers
+├── schemas/        # Pydantic schemas
+├── services/       # Auth & JWT logic
+├── main.py
+├── requirements.txt
+├── .env.example
+├── README.md
 ```
-
-### Jobs
+## Environment Variables
+Create a `.env` file in the project root:
 ```
-GET /jobs
-GET /jobs/{job_id}
-GET /jobs/my
-POST /jobs
-GET /jobs/{job_id}/applications
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+JWT_SECRET_KEY=your-secret-key
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=60
 ```
-
-### Applications
-```
-POST /applications
-GET /applications/my
-```
-
-### Admin
-```
-GET /admin/users
-PUT /admin/users/{user_id}/role
-```
+**Note:**
+DATABASE_URL engine is the **sync URL.**
+The async engine automatically converts it to asyncpg
 
 ---
-
-## Local Development
-
-### 1. Create virtual environment
-```
-python -m venv venv
-venv\Scripts\activate
-```
-### 2. Install dependencies
-```
-pip install -r requirements.txt
-```
-### 3. Configure environment variables
-Create a `.env` file:
-```
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DBNAME?sslmode=require
-JWT_SECRET_KEY=your_secret_key
-JWT_ALGORITHM=HS256
-JWT_EXPIRE_MINUTES=30
-```
-### 4. Run migrations
+## Database & Migrations
+Run migrations with Alembic:
 ```
 alembic upgrade head
 ```
-### 5. Run server
+Create new migration after model changes:
 ```
+alembic revision --autogenerate -m "description"
+```
+
+---
+## Running Locally
+```
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
 uvicorn main:app --reload
 ```
-## API Docs
-After starting the server, open:
+API will be available at:
+```
+http://localhost:8000
+```
+Swagger docs:
 ```
 http://localhost:8000/docs
 ```
-## License
-MIT
+
+## Deployment
+The application is deployed using **Railway** with:
+```
+gunicorn -k uvicorn.workers.UvicornWorker main:app
+```
+- PostgreSQL hosted on **Neon**
+- Environment variables configured via Railway dashboard
+
+## Design notes
+-**Single-role model:** a user has exactly one facing role
+- Clear separation of concerns:
+    - services -> business logic
+    - dependencies -> request-level concerns
+    - routers -> API layer
+---
+
+## Status
+- Core functionality completed
+- Deployed and operational
+- Future improvements
+    - Refresh tokens
+    - Pagination & filtering
+    - Frontend client
+    - Permission matrix
+---
+
+## Author
+Built by **Oliver Aladrović / oliver.aladrovic**
+Backend-focused Python developer.
